@@ -364,8 +364,56 @@
 
     // Butona basınca çalıştır
     generateBtn.addEventListener('click', generateSiteContent);
+    const LM_STUDIO_ENDPOINT = 'http://localhost:1234/v1/chat/completions';
+
+async function generateWithUmbra() {
+    const company = document.querySelector('input[placeholder*="Nexus"]').value;
+    const industry = document.querySelector('input[placeholder*="Marketing"]').value;
+    const details = document.querySelector('textarea').value;
+
+    const btn = document.querySelector('button.bg-primary.text-white');
+    btn.innerText = "Processing...";
+    btn.disabled = true;
+
+    // Umbra'nın "Zekası": JSON formatında çıktı zorlayan prompt
+    const prompt = `You are Umbra AI. Create landing page content in JSON format for:
+    Company: ${company}
+    Industry: ${industry}
+    Description: ${details}
+
+    Strictly return ONLY JSON:
+    {
+      "title": "Headline",
+      "subtitle": "Tagline",
+      "services": [{"t": "Title", "d": "Desc"}]
+    }`;
+
+    try {
+        const response = await fetch(LM_STUDIO_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.6
+            })
+        });
+
+        const data = await response.json();
+        const content = JSON.parse(data.choices[0].message.content);
+        
+        console.log("Umbra Generated:", content);
+        // Burada gelen veriyi iframe'deki Agency temasına basacağız.
+        
+    } catch (err) {
+        alert("Bağlantı hatası! LM Studio'yu açıp 'Start Server' dedin mi?");
+    } finally {
+        btn.innerText = "Save Settings";
+        btn.disabled = false;
+    }
+}
 </script>
 </body>
 
 
 </html>
+
